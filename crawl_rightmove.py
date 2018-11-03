@@ -4,6 +4,8 @@ from lxml import html
 import re
 import pandas as pd
 
+import re_utils
+
 def make_url(index_no):
     url_1 = """\
 https://www.rightmove.co.uk/property-for-sale/find.html?\
@@ -52,7 +54,45 @@ def get_id_list(url_list):
         id_list_total += id_list_per_url
     return id_list_total
 
+def get_title(specific_link):
+    try:
+        r = requests.get(specific_link)
+    except Exception as e:
+        print(e, ':', specific_link)
+    soup = BeautifulSoup(r.content, 'lxml')
+    print('title:', soup.select('div.left h1')[0].text)
+    title = soup.select('div.left h1')[0].text
+    return title
+
+def get_address(specific_link):
+    try:
+        r = requests.get(specific_link)
+    except Exception as e:
+        print(e, ':', specific_link)
+    soup = BeautifulSoup(r.content, 'lxml')
+    print('address:', soup.select('div.left meta[itemprop="streetAddress"]')[0])
+    address = re_utils.get_content_value(soup.select('div.left meta[itemprop="streetAddress"]')[0])
+    return address
+
+def get_price(specific_link):
+    try:
+        r = requests.get(specific_link)
+    except Exception as e:
+        print(e, ':', specific_link)
+    soup = BeautifulSoup(r.content, 'lxml')
+    print('price:', soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip())
+    price = soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip()
+    return price
+
 
 if __name__ == '__main__':
     url = make_url(index_no=0)
     print(url)
+    url_list = make_url_list(test=1, index_no=0, url_list=[])
+    id_list_total = get_id_list(url_list)
+    for property_id in set(id_list_total):
+        specific_link = "https://www.rightmove.co.uk/property-for-sale/property-%d.html" % property_id
+        print(specific_link)
+        title = get_title(specific_link)
+        address = get_address(specific_link)
+        price = get_price(specific_link)
