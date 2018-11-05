@@ -6,7 +6,7 @@ def remove_tag(string):
     return m
 
 def get_content_value(string):
-    m = re.search(r'(content="[\w\,\ ]+")', string).group()
+    m = re.search(r'(content="[\w\,\ ]+")', str(string)).group()
     value = re.sub(r'(content=|\")', '', m)
     return value
 

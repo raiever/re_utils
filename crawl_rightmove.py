@@ -5,6 +5,7 @@ import re
 import pandas as pd
 
 import re_utils
+import mysql.connector
 
 def make_url(index_no):
     url_1 = """\
@@ -39,7 +40,7 @@ def get_property_id(url):
     id_list_per_url = []
     r = requests.get(url)
     soup = BeautifulSoup(r.text, 'lxml')
-    p = re.compile('[\d]+')
+    p = re.compile(r'[\d]+')
     for a in soup.select("div.propertyCard-details a.propertyCard-link"):
         property_id = (p.search(str(a.get('href')))).group() # property ID 
         # print(a.get('href')) # link: /property-for-sale/property-75515954.html
@@ -61,7 +62,10 @@ def get_title(specific_link):
         print(e, ':', specific_link)
     soup = BeautifulSoup(r.content, 'lxml')
     print('title:', soup.select('div.left h1')[0].text)
-    title = soup.select('div.left h1')[0].text
+    try:
+        title = soup.select('div.left h1')[0].text
+    except:
+        title = 'None'
     return title
 
 def get_address(specific_link):
@@ -71,7 +75,10 @@ def get_address(specific_link):
         print(e, ':', specific_link)
     soup = BeautifulSoup(r.content, 'lxml')
     print('address:', soup.select('div.left meta[itemprop="streetAddress"]')[0])
-    address = re_utils.get_content_value(soup.select('div.left meta[itemprop="streetAddress"]')[0])
+    try:
+        address = re_utils.get_content_value(soup.select('div.left meta[itemprop="streetAddress"]')[0])
+    except:
+        address = 'None'
     return address
 
 def get_price(specific_link):
@@ -81,7 +88,10 @@ def get_price(specific_link):
         print(e, ':', specific_link)
     soup = BeautifulSoup(r.content, 'lxml')
     print('price:', soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip())
-    price = soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip()
+    try:
+        price = soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip()
+    except:
+        price = 'None'
     return price
 
 
@@ -90,9 +100,31 @@ if __name__ == '__main__':
     print(url)
     url_list = make_url_list(test=1, index_no=0, url_list=[])
     id_list_total = get_id_list(url_list)
+
+    config = {
+        'user': 'root',
+        'password': 'younha0402!',
+        'host': '127.0.0.1',
+        'database': 'my_estate',
+        'raise_on_warnings': True
+        }
+
+    cnx = mysql.connector.connect(**config)
+    cursor = cnx.cursor()
+
+    query = ("INSERT INTO property_list "
+            "(property_id, title, address, price) "
+            "VALUES (%s, %s, %s, %s)")
+
     for property_id in set(id_list_total):
         specific_link = "https://www.rightmove.co.uk/property-for-sale/property-%d.html" % property_id
         print(specific_link)
         title = get_title(specific_link)
         address = get_address(specific_link)
         price = get_price(specific_link)
+        data = (property_id, title, address, price)
+        cursor.execute(query, data)
+    
+    cnx.commit()
+    cursor.close()
+    cnx.close()
