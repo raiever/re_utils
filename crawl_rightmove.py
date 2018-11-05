@@ -6,6 +6,7 @@ import pandas as pd
 
 import re_utils
 import mysql.connector
+from config import MYSQL
 
 def make_url(index_no):
     url_1 = """\
@@ -82,16 +83,18 @@ def get_address(specific_link):
     return address
 
 def get_price(specific_link):
+    p = re.compile(r'[\£\,]')
     try:
         r = requests.get(specific_link)
     except Exception as e:
         print(e, ':', specific_link)
     soup = BeautifulSoup(r.content, 'lxml')
-    print('price:', soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip())
+    print('price:', int(p.sub('', soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip())))
     try:
-        price = soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip()
+        temp = soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip()
+        price = int(p.sub('', temp))
     except:
-        price = 'None'
+        price = None
     return price
 
 
@@ -100,16 +103,9 @@ if __name__ == '__main__':
     print(url)
     url_list = make_url_list(test=1, index_no=0, url_list=[])
     id_list_total = get_id_list(url_list)
+    print('Length of id_list_total: ', len(set(id_list_total)))
 
-    config = {
-        'user': 'root',
-        'password': 'younha0402!',
-        'host': '127.0.0.1',
-        'database': 'my_estate',
-        'raise_on_warnings': True
-        }
-
-    cnx = mysql.connector.connect(**config)
+    cnx = mysql.connector.connect(**MYSQL)
     cursor = cnx.cursor()
 
     query = ("INSERT INTO property_list "
@@ -124,6 +120,7 @@ if __name__ == '__main__':
         price = get_price(specific_link)
         data = (property_id, title, address, price)
         cursor.execute(query, data)
+        print()
     
     cnx.commit()
     cursor.close()
