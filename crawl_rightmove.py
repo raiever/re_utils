@@ -7,6 +7,7 @@ import pandas as pd
 import re_utils
 import mysql.connector
 from config import MYSQL
+from date import today
 
 def make_url(index_no):
     url_1 = """\
@@ -108,9 +109,13 @@ if __name__ == '__main__':
     cnx = mysql.connector.connect(**MYSQL)
     cursor = cnx.cursor()
 
-    query = ("INSERT INTO property_list "
-            "(property_id, title, address, price) "
-            "VALUES (%s, %s, %s, %s)")
+    query_1 = ("INSERT INTO property_list "
+               "(property_id, title, address, price) "
+               "VALUES (%s, %s, %s, %s)")
+
+    today = today()
+    query_2 = ("ALTER TABLE property_list "
+               "ADD %s_price INT(11);" % today)
 
     for property_id in set(id_list_total):
         specific_link = "https://www.rightmove.co.uk/property-for-sale/property-%d.html" % property_id
@@ -119,7 +124,7 @@ if __name__ == '__main__':
         address = get_address(specific_link)
         price = get_price(specific_link)
         data = (property_id, title, address, price)
-        cursor.execute(query, data)
+        cursor.execute(query_1, data)
         print()
     
     cnx.commit()
