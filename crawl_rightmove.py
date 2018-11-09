@@ -116,7 +116,9 @@ if __name__ == '__main__':
     today = today()
     query_2 = ("ALTER TABLE property_list "
                "ADD %s_price INT(11);" % today)
-
+    cursor.execute(query_2)
+    
+    # Initial DB
     for property_id in set(id_list_total):
         specific_link = "https://www.rightmove.co.uk/property-for-sale/property-%d.html" % property_id
         print(specific_link)
