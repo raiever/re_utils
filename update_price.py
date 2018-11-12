@@ -21,7 +21,7 @@ def update_price(id_list):
     cnx = mysql.connector.connect(**MYSQL)
     cursor = cnx.cursor()
     today_date = today()
-    new_column = '%s_price' % today_date
+    new_column = '%s' % today_date
     alter_query = ("ALTER TABLE property_list "
                    "ADD %s INT(11);" % new_column)
     try:

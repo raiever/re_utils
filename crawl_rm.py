@@ -55,7 +55,8 @@ def get_id_list(url_list):
         id_list_per_url = get_property_id(url)
         print('Length of id list: ', len(id_list_per_url))
         id_list_total += id_list_per_url
-    return id_list_total
+    print('Length of id_list_total: ', len(set(id_list_total)))
+    return set(id_list_total)
 
 def get_title(specific_link):
     try:
@@ -98,34 +99,37 @@ def get_price(specific_link):
         price = None
     return price
 
+def get_info(specific_link):
+    title = get_title(specific_link)
+    address = get_address(specific_link)
+    price = get_price(specific_link)
+    return title, address, price
+
+def make_property_link(property_id):
+    specific_link = "https://www.rightmove.co.uk/property-for-sale/property-%d.html" % property_id
+    return specific_link
+
 
 if __name__ == '__main__':
     url = make_url(index_no=0)
     print(url)
     url_list = make_url_list(test=1, index_no=0, url_list=[])
     id_list_total = get_id_list(url_list)
-    print('Length of id_list_total: ', len(set(id_list_total)))
 
     cnx = mysql.connector.connect(**MYSQL)
     cursor = cnx.cursor()
 
+    today_date = today()
     query_1 = ("INSERT INTO property_list "
-               "(property_id, title, address, price) "
-               "VALUES (%s, %s, %s, %s)")
-
-    today = today()
-    query_2 = ("ALTER TABLE property_list "
-               "ADD %s_price INT(11);" % today)
-    cursor.execute(query_2)
+               "(property_id, title, address, %s) "
+               "VALUES (%s, %s, %s, %d)")
     
     # Initial DB
     for property_id in set(id_list_total):
-        specific_link = "https://www.rightmove.co.uk/property-for-sale/property-%d.html" % property_id
-        print(specific_link)
-        title = get_title(specific_link)
-        address = get_address(specific_link)
-        price = get_price(specific_link)
-        data = (property_id, title, address, price)
+        specific_link = make_property_link(property_id)
+        infos = get_info(specific_link)
+        data = (today_date, property_id) + infos
+        print(data)
         cursor.execute(query_1, data)
         print()
     
