@@ -2,24 +2,30 @@ import mysql.connector
 from config import MYSQL
 from date import today
 
-from crawl_rightmove import make_url, get_price
+from crawl_rm import make_url, get_price
 
-def read_property_id():
+cnx = mysql.connector.connect(**MYSQL)
+cursor = cnx.cursor()
+
+def read_property_id(cursor):
     id_list = []
-    cnx = mysql.connector.connect(**MYSQL)
-    cursor = cnx.cursor()
     query = ("SELECT property_id "
              "FROM property_list")
     cursor.execute(query)
     [id_list.append('%d' %i) for i in cursor]
-    print(id_list)
-    cursor.close()
-    cnx.close()
+    print('existed property_id: ', id_list)
     return id_list
 
-def update_price(id_list):
-    cnx = mysql.connector.connect(**MYSQL)
-    cursor = cnx.cursor()
+def update_column(cursor, today_date):
+    query = ("ALTER TABLE property_list "
+             "ADD %s INT(11);" % today_date)
+    try:
+        cursor.execute(query)
+    except Exception as e:
+        print(e)
+    return
+
+def update_price(cursor, id_list):
     today_date = today()
     new_column = '%s' % today_date
     alter_query = ("ALTER TABLE property_list "
@@ -39,12 +45,10 @@ def update_price(id_list):
         print(insert_query)
         cursor.execute(insert_query)
     cnx.commit()
-    cursor.close()
-    cnx.close()
 
 
 if __name__ == '__main__':
-    id_list = read_property_id()
+    id_list = read_property_id(cursor)
     print(len(id_list))
 
-    update_price(id_list)
+    update_price(cursor, id_list)

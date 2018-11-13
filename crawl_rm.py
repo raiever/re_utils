@@ -64,9 +64,10 @@ def get_title(specific_link):
     except Exception as e:
         print(e, ':', specific_link)
     soup = BeautifulSoup(r.content, 'lxml')
-    print('title:', soup.select('div.left h1')[0].text)
+    # print('title:', soup.select('div.left h1')[0].text)
     try:
-        title = soup.select('div.left h1')[0].text
+        temp = soup.select('div.left h1')[0].text
+        title = re_utils.remove_words(temp)
     except:
         title = 'None'
     return title
@@ -77,7 +78,7 @@ def get_address(specific_link):
     except Exception as e:
         print(e, ':', specific_link)
     soup = BeautifulSoup(r.content, 'lxml')
-    print('address:', soup.select('div.left meta[itemprop="streetAddress"]')[0])
+    # print('address:', soup.select('div.left meta[itemprop="streetAddress"]')[0])
     try:
         address = re_utils.get_content_value(soup.select('div.left meta[itemprop="streetAddress"]')[0])
     except:
@@ -91,7 +92,7 @@ def get_price(specific_link):
     except Exception as e:
         print(e, ':', specific_link)
     soup = BeautifulSoup(r.content, 'lxml')
-    print('price:', int(p.sub('', soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip())))
+    # print('price:', int(p.sub('', soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip())))
     try:
         temp = soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip()
         price = int(p.sub('', temp))
@@ -103,7 +104,10 @@ def get_info(specific_link):
     title = get_title(specific_link)
     address = get_address(specific_link)
     price = get_price(specific_link)
-    return title, address, price
+    info = {'title': title,
+            'address': address,
+            'price': price}
+    return info
 
 def make_property_link(property_id):
     specific_link = "https://www.rightmove.co.uk/property-for-sale/property-%d.html" % property_id
