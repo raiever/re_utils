@@ -7,7 +7,7 @@ from date import today
 if __name__ == '__main__':
     today_date = today()
 
-    url_list = crawl_rm.make_url_list(test=1, index_no=0, url_list=[])
+    url_list = crawl_rm.make_url_list(test=0, index_no=0, url_list=[])
     id_list_total = crawl_rm.get_id_list(url_list)
 
     cnx = mysql.connector.connect(**MYSQL)
@@ -17,14 +17,15 @@ if __name__ == '__main__':
     existed_id_list = update_price.read_property_id(cursor)
 
     for i in id_list_total:
-        if not i in existed_id_list:
+        if not str(i) in existed_id_list:
             specific_link = crawl_rm.make_property_link(i)
             infos = crawl_rm.get_info(specific_link)
             data = (i, str(infos['title']), str(infos['address']), infos['price'])
             query = queries.insert_info_query(today_date)
             print(data)
             cursor.execute(query, data)
-        elif i in existed_id_list:
+        elif str(i) in existed_id_list:
+            specific_link = crawl_rm.make_property_link(i)
             updated = crawl_rm.get_price(specific_link)
             data = (today_date, updated, i)
             query = queries.update_price_query(data)

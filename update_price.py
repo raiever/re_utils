@@ -49,6 +49,6 @@ def update_price(cursor, id_list):
 
 if __name__ == '__main__':
     id_list = read_property_id(cursor)
-    print(len(id_list))
+    print(type(id_list[0]), id_list[0])
 
-    update_price(cursor, id_list)
+    # update_price(cursor, id_list)
