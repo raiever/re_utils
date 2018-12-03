@@ -67,7 +67,7 @@ def get_title(specific_link):
     # print('title:', soup.select('div.left h1')[0].text)
     try:
         temp = soup.select('div.left h1')[0].text
-        title = re_utils.remove_words(temp)
+        title = re_utils.remove_words(temp).strip()
     except:
         title = 'None'
     return title
@@ -97,7 +97,7 @@ def get_price(specific_link):
         temp = soup.select('div.property-header-bedroom-and-price p#propertyHeaderPrice strong')[0].text.strip()
         price = int(p.sub('', temp))
     except:
-        price = None
+        price = 0
     return price
 
 def get_info(specific_link):
