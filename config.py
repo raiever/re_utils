@@ -5,7 +5,7 @@ import sys
 MYSQL = {
     'host': '127.0.0.1',
     'user': 'root',
-    'password': 'younha0402!',
+    'password': 'password',
     'database': 'my_estate',
     'port': 3306,
     'charset': 'utf8',

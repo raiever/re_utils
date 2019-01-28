@@ -4,28 +4,15 @@ from lxml import html
 import re
 import pandas as pd
 
-import re_utils
+import re_utils, url_format
 import mysql.connector
 from config import MYSQL
 from date import today
 
-def make_url(index_no):
-    url_1 = """\
-https://www.rightmove.co.uk/property-for-sale/find.html?\
-locationIdentifier=REGION%5E972\
-&maxPrice=1000000\
-&radius=5.0"""
-    index = '&index=%d' % index_no
-    url_2 = """\
-&propertyTypes=detached%2Csemi-detached%2Cterraced\
-&primaryDisplayPropertyType=houses\
-&includeSSTC=true"""
-    full_url = url_1 + index + url_2
-    return full_url
 
 def make_url_list(test=1, index_no=0, url_list=[]):
     while True:
-        full_url = make_url(index_no)
+        full_url = url_format.make_url(index_no)
         r = requests.get(full_url)
         if r.status_code == 200:
             # print(full_url, ':', r.status_code, '/n')
